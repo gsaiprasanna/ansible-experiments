@@ -1,0 +1,17 @@
+- hosts: webhosts
+  user: test
+  sudo: yes
+  connection: ssh
+  vars:
+    playbook_type: conditionalexample
+  vars_files:
+    - conf/webdefaults.yml
+    - conf/copyright.yml
+  tasks:
+    - name: Install Apache Appropriate to the Distribution Type( Centos/Redhat)
+      command: yum install -y httpd
+      when: ansible_os_family=="Centos"
+    - name: Install Apache Appropriate to Dist. Type (Ubuntu/Debian)
+      command: apt-get install -y apache2
+      when: ansible_os_family=="Redhat"
+       
