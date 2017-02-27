@@ -1,0 +1,32 @@
+--- # My first YAML playbook for Ansible
+- hosts: webhosts
+  user: test
+  sudo: yes
+  connection: ssh
+  gather_facts: no 
+  vars:
+    playbook_version: 0.1b
+  vars_files:
+    - conf/copyright.yml
+    - conf/webdefaults.yml
+  vars_prompt:
+    - name: pkg_name 
+      prompt: Install which Package?
+  tasks:
+    - name: Install Apache Web Server
+      action: yum name=httpd state=installed
+      async: 300 # makes it run the job in parallel 
+      poll: 3    # poll every 3 seconds
+      notify: Restart HTTPD
+    - name: Installs the Lynx web browser
+      action: yum name={{pkg_name}} state=installed
+  handlers: 
+    - name: Restart HTTPD
+      action: service name=httpd state=restarted
+
+  
+    #- name: Install Lynx Web Browser
+    #  action: yum name=lynx state=installed 
+    # - name: Check for Telnet Client
+    #  action: yum name=telnet state=absent 
+      
