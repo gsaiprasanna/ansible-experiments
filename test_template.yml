@@ -1,0 +1,12 @@
+--- # Testing the J2 template module
+- hosts: webhosts
+  connection: ssh
+  sudo: yes
+  gather_facts: yes
+  vars:
+    userName: test
+    userPassword: password12
+    connectionType: SFTP
+  tasks:
+   - name: Install the config file customized for the system
+     template: src=test.conf.j2 dest=/home/test/test.conf owner=test group=test mode=750

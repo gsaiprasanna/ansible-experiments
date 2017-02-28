@@ -1,0 +1,14 @@
+--- # Notify Example
+- hosts: webhosts
+  sudo: yes
+  connection: ssh
+  user: test
+  gather_facts: no
+  tasks:
+    - name: Install the Apache Web Server
+      action: yum name=httpd state=installed
+      notify: Restart HTTPD
+# NOTIFY 'status' has to 'match' the 'name' of HANDLER; then only the handler executes
+  handlers:
+    - name: Restart HTTPD
+      action: service name=httpd state=restarted

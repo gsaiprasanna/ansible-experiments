@@ -1,0 +1,15 @@
+--- # Delegateto function Example
+- hosts: webhosts
+  user: test
+  connection: ssh
+  sudo: yes
+  tasks:
+   - name: Run a remote ping on apphosts
+     command: ping -c 4 server3 > /home/test/playbooks/ping.out
+     delegate_to: 127.0.0.1
+   - name: Install a package
+     yum: pkg=lynx state=latest
+
+# Delegate command allows us to run the commands on other servers    
+     
+  

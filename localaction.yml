@@ -1,0 +1,12 @@
+--- # Example for Local Action
+- hosts: webhosts
+  user: test
+  sudo: yes
+  connection: ssh
+  gather_facts: no
+  tasks:
+   - name: Ping the app server before we run our install
+     local_action: command ping -c 4 server2
+   - name: Install lynx on remote server
+     yum: pkg=lynx state=latest
+  
