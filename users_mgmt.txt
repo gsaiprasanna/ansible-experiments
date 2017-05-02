@@ -1,6 +1,7 @@
 --- users.xml file
 
 users:
+
   - {
       name: sai,
       comment: "Sai Prasanna", 
@@ -18,7 +19,12 @@ users:
 
 ---# Creating and removing users
 
-# Adding a user
+- hosts: all
+  sudo: yes
+  connection: ssh
+  gather_facts: no 
+
+# Adding a user, .ssh dir and copying public key
 
 - name: Create UNIX User {{ item.name }}
   user: name={{ item.name }} 
@@ -28,16 +34,27 @@ users:
         groups="{{ item.group }}" 
 
 - name: Create UNIX User {{ item.name }} SSH Directory
-  file: dest="/home/{{ item.name }}/.ssh" state=directory owner={{ item.name }} group={{ item.name }} mode=0700
+  file: dest="/home/{{ item.name }}/.ssh" 
+        mode=0755
+        state=directory 
+        owner={{ item.name }} 
+        group={{ item.name }}
   when: item.ssh is defined and item.ssh.public_key is defined
 
 - name: Set UNIX User {{ item.name }} public SSH key
-  copy: content="{{ item.ssh.public_key }}" dest="/home/{{ item.name }}/.ssh/authorized_keys" owner={{ item.name }} group={{ item.name }} mode=0644
+  copy: content="{{ item.ssh.public_key }}" 
+        dest="/home/{{ item.name }}/.ssh/authorized_keys" 
+        mode=0644
+        owner={{ item.name }} 
+        group={{ item.name }} 
   when: item.ssh is defined and item.ssh.public_key is defined
+
+
 
 
 
 # Removing a user
+
 - name: Remove UNIX User {{ item.name }}
   user: name={{ item.name }} 
         state= absent
