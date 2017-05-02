@@ -1,0 +1,8 @@
+--- # Install Telnet on Server2
+- hosts: webhosts
+  sudo: yes
+  user: test
+  gather_facts: no
+  tasks:
+   - name: Install telnet package
+     yum: pkg=telnet state=latest

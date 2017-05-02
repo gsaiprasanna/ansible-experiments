@@ -1,0 +1,11 @@
+--- # Adding users 
+- hosts: all
+  
+  user: 
+      name: '{{ item.name }}' 
+      comment: '{{item.comment}}'
+      uid: 9001
+      shell: '{{ item.shell }}' 
+      state: '{{ item.state}}'
+  with_items: 
+     - "{{ users1 }}" 

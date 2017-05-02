@@ -1,0 +1,19 @@
+--- # Adding users
+- hosts: all
+  user: root
+  sudo: yes
+  connection: ssh
+  gather_facts: no
+  user: name={{ item.name }}
+        state={{ item.state | default("present") }}
+        uid={{ item.uid }}
+     # If you want to create a group for user
+     #group: '{{ item.group | default(item.name) }}'
+     # Add to a group 
+        shell={{item.shell}}      
+        comment={{ item.comment }}
+        password={{ item.password }}
+        home={{ item.home | default("/home/"+item.name) }}
+        append=yes
+  with_items: 
+     - "{{ users }}"

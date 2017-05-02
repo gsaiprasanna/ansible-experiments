@@ -1,0 +1,17 @@
+--- # When 2 Example by Sai
+- hosts: all
+  user: test
+  connection: ssh
+  sudo: yes
+  gather_facts: yes 
+  tasks:
+    - name: Install the Apache Web Server on Redhat linux dist.
+     # action: yum name=httpd state=latest
+      command: yum install -y httpd
+      when: ansible_os_family == "RedHat"
+    - name: Install the Apache Web Server on Centos linux dist.
+      command: yum install -y httpd
+      when: ansible_os_family== "RedHat"
+    - name: Install the Apache Web Server on Ubuntu linux dist.
+      command: apt-get install -y apache2
+      when: ansible_os_family== "Debian"

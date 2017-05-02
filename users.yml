@@ -1,0 +1,27 @@
+--- # Users to be added
+users:
+  - {
+      user: sai,
+      password: Redhat@97
+      comment: "Sai Prasanna",
+      uid: 9001
+      state: present
+      shell: /bin/bash
+    }
+  - {
+      user: shalini,
+      password: Redhat@97
+      comment: "Shalini Sri",
+      uid: 9002
+      state: present
+      shell: /bin/bash
+    }
+  - {
+      user: pravallika,
+      password: Redhat@97
+      comment: "Sai Pravallika",
+      uid: 9003
+      state: present
+      shell: /bin/bash
+    }
+

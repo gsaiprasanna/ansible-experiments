@@ -1,0 +1,8 @@
+--- # USER module 
+- hosts: all
+  sudo: yes
+  gather_facts: no 
+  connection: ssh
+  tasks: 
+    - name: Add the user called padma 
+      user: name=padma state=absent remove=yes

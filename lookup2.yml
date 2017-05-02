@@ -1,0 +1,8 @@
+--- # LookUp Example
+- hosts: webhosts
+  connection: ssh
+  user: test
+  sudo: yes
+  gather_facts: no
+  tasks:
+   - debug: msg= "{{ lookup('env','HOME')}} is the value listed"  

@@ -1,0 +1,31 @@
+--- # Create a PlayBook from Outline
+- hosts: webhosts
+  user: test
+  sudo: yes
+  connection: ssh
+  gather_facts: no
+  tasks:
+   - name: date/time stamp for when the playbook starts
+     raw: /usr/bin/date > /home/test/playbook_start.log
+   - name: Install the Apache web server
+     yum: pkg=httpd state=latest
+   - name: Verify the Apache Web Server
+     command: systemctl status httpd
+     register: result
+   - debug: var=result
+   - name: Install the telnet client
+     yum: pkg=telnet state=latest
+     service: name=telnet state=restarted
+   - name: Install the Lynx browser
+     yum: pkg=lynx state=latest
+     notify: Restart HTTPD
+   - name: Capturing log files of packages installed on the system
+     raw: yum list installed > /home/test/installed.log
+   - name: Restart HTTPD
+     service: name=httpd state=restarted
+   - name: date/time stamp for when the playbook ends
+     raw: /usr/bin/date > /home/test/playbook_end.log
+    
+
+
+     

@@ -1,0 +1,12 @@
+--- # Run ONCE 2 playbook
+- hosts: webhosts
+  sudo: yes
+  connection: ssh
+  user: test
+  gather_facts: no
+  tasks: 
+    - name: Running the uptime command and log it
+      raw: /usr/bin/uptime >> /home/test/uptime.log
+    - name: List the var dir. and piping the output to file
+      raw: ls -al /var/ >> /home/test/dir.list
+      run_once: true

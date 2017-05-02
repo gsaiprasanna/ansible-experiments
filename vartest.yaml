@@ -1,0 +1,23 @@
+--- # This is a variable testing
+- hosts: '{{myhost}}'
+  sudo: yes
+  gather_facts: '{{gather}}'
+  connection: ssh
+  vars: 
+    myhost: webhosts
+    gather: yes
+    pkg: telnet
+  tasks:
+  - name: Install the indicated software package 
+    yum: 
+      name: '{{pkg}}'
+      state: latest
+    register: result
+  - debug: var=result
+    notify: 
+      - startservice
+  handlers:
+  - name: startservice
+    service: 
+      name: telnet 
+      state: restarted

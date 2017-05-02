@@ -1,0 +1,30 @@
+--- # This is a simple example for variable prompt 
+
+- hosts: '{{myhosts}}'
+  sudo: yes
+  connection: ssh
+  gather_facts: no 
+  vars: 
+    playbook_version: 0.01b
+    myhosts: webhosts
+  vars_files:
+   - conf/copyright.yml
+  vars_prompt: 
+   - name: pkgname
+     prompt: Install which package? 
+     default: telnet
+     private: no 
+  tasks: 
+   - name: Install the lynx browser
+     yum: 
+       name: lynx
+       state: latest
+   - name: Install the indicated package
+     yum: pkg={{pkgname}} state=latest
+     notify:
+       - enable and start the service 
+  handlers: 
+     - name:  enable and start the service
+       service: 
+         name: '{{pkgname}}'
+         state: restarted

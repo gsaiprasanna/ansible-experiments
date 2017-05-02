@@ -1,0 +1,19 @@
+--- # TAGS-2 PlayBook
+- hosts: webhosts
+  user: test
+  sudo: yes
+  connection: ssh
+  gather_facts: no
+  tasks:
+    - name: Install the telnet package
+      yum: pkg=telnet state=latest
+    - name: Install the lynx package
+      yum: pkg={{item}} state=latest
+      with_items:
+         - lynx
+      tags: 
+         - packages
+    - name: Verifying the telnet is installed or not
+      raw: yum list installed | grep telnet >> /home/test/pkg.log
+      tags:
+         - logging  

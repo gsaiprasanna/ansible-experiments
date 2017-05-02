@@ -1,0 +1,19 @@
+--- # This is a structural yaml script to run CENTOS on HTTPD
+- hosts: webhosts
+  sudo: yes
+  connection: ssh
+  gather_facts: yes
+  vars: 
+    username: saiprasanna
+  tasks:
+  - name: Install HTTPD server on CentOS
+    yum:
+      name: httpd
+      state: latest
+    notify:
+     - startservice
+  handlers:
+  - name: startservice
+    service: 
+       name: httpd
+       state: restarted

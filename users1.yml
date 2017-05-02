@@ -1,0 +1,6 @@
+users:
+  - {
+      user: sai,
+      comment: "Sai Prasanna", 
+      state: present
+    }

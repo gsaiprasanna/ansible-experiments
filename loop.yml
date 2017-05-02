@@ -1,0 +1,12 @@
+--- # Loop Playbook example
+- hosts: webhosts
+  sudo: yes
+  connection: ssh
+  user: test
+  tasks:
+   - name: Defining a list of users
+     user: name={{ item }} state=present
+     with_items:
+       - user1
+       - user2
+       - user3

@@ -1,0 +1,12 @@
+--- # Ignore Error Handling
+- hosts: webhosts
+  sudo: yes
+  user: test
+  connection: ssh
+  gather_facts: no
+  tasks:
+    - name: Failing a command 
+      command: /bin/false
+      ignore_errors: yes
+    - name: Installing the telnet client
+      yum: pkg=telnet state=latest

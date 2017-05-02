@@ -1,0 +1,13 @@
+--- # Notify-2 example by Sai
+- hosts: webhosts
+  connection: ssh
+  user: test
+  sudo: yes
+  gather_facts: no
+  tasks: 
+   - name: Install the Apache Web Server 
+     action: yum name=httpd state=latest
+     notify: Restart HTTPD
+  handlers:
+   - name: Restart HTTPD
+     action: service name=httpd state=restarted
