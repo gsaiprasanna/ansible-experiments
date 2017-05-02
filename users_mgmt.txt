@@ -1,0 +1,49 @@
+--- users.xml file
+
+users:
+  - {
+      name: sai,
+      comment: "Sai Prasanna", 
+      uid: 9001
+      shell: /bin/bash
+      password: 
+      ssh:
+        public_key: ssh-rsa
+      groups: 
+        - uniadmin
+      home: sai
+      state: present
+     }
+
+
+---# Creating and removing users
+
+# Adding a user
+
+- name: Create UNIX User {{ item.name }}
+  user: name={{ item.name }} 
+        comment="{{ item.comment }}" 
+        shell="{{ item.shell}}"  
+        password="{{ item.password }}"  
+        groups="{{ item.group }}" 
+
+- name: Create UNIX User {{ item.name }} SSH Directory
+  file: dest="/home/{{ item.name }}/.ssh" state=directory owner={{ item.name }} group={{ item.name }} mode=0700
+  when: item.ssh is defined and item.ssh.public_key is defined
+
+- name: Set UNIX User {{ item.name }} public SSH key
+  copy: content="{{ item.ssh.public_key }}" dest="/home/{{ item.name }}/.ssh/authorized_keys" owner={{ item.name }} group={{ item.name }} mode=0644
+  when: item.ssh is defined and item.ssh.public_key is defined
+
+
+
+# Removing a user
+- name: Remove UNIX User {{ item.name }}
+  user: name={{ item.name }} 
+        state= absent
+        remove=yes
+        dest="/home/{{ item.name }}" 
+        state=absent
+         
+  with_items: 
+     - "{{ users }}"
