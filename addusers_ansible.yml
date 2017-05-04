@@ -13,7 +13,10 @@
      home: /home/{{item.name}}
     with_items:
      - { name: 'prasansa', groups: 'root', comment: 'Sai Prasanna'}
+    register: result
+  - debug: var=result
      
+#   ~playbooks/users/users.yml 
 #   ssh_users:
 #    - name: user1
 #      key: "{{ lookup('file', '/home/ec2-user/files/user1.pub') }}"
@@ -33,5 +36,6 @@
      key: "{{lookup('file','/home/ec2-user/files/authorized_keys.users.pub')}}" 
      #    "{{lookup('file', '"{{item.key}}"'}}"
     with_items: #ssh_users
-     - { name: 'prasansa', groups: 'root', comment: 'Sai Prasanna'}
-     
+     - { name: 'prasansa'}
+    register: result
+  - debug: var=result    
