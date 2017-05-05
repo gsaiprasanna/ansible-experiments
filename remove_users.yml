@@ -1,0 +1,15 @@
+--- # Removing users
+
+- hosts: node 
+  remote_user: root 
+  become: yes
+  tasks:
+  - name: Removing users in nodes 
+    user:
+     name: "{{item}}"
+     state: absent
+     remove: yes
+    with_items:
+    - user1
+    - user2
+    - user3

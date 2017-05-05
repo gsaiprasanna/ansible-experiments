@@ -1,0 +1,23 @@
+--- # 
+  - name: Putting files in s3
+    s3:
+      bucket: mybucket
+      region: us-east-1
+      state: present
+      object: /my/desired/users.txt
+      src: /usr/local/users.txt
+      mode: put
+
+
+
+
+#!/bin/bash
+# yum install python pip -y
+# yum install awscli -y    
+# aws s3 cp s3://bucketname/path/to/file/fetch.sh .
+# chmod  fetch.sh 
+# exec ./fetch.sh 
+
+
+
+# aws ec2 run-instances --user-data file:///full/path/to/my_script

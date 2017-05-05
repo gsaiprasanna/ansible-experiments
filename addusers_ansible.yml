@@ -1,5 +1,6 @@
 --- # Adding users
 - hosts: 10.95.1.93
+# - hosts: tag_Name_Value
   remote_user: ec2-user
   become: yes
   tasks:
@@ -13,9 +14,22 @@
      home: /home/{{item.name}}
     with_items:
      - { name: 'prasansa', groups: 'root', comment: 'Sai Prasanna'}
+  
+  - name: Get s3 object from bucket for publickeys
+    s3:
+     bucket: syn-devops
+     object: public_keys/authorized_keys.users.pub
+     dest: /home/{{item.name}}/.ssh/authorized_keys
+     mode: get
+     with_items:
+      - {name: 'prasansa'}
+  - name: Copy the authorized_keys 
+    copy: 
+      content: /syn-devops/public_keys/authorized_key    
+      dest: /home/{{item.name}}/.ssh/authorized_keys
     register: result
   - debug: var=result
-     
+
 #   ~playbooks/users/users.yml 
 #   ssh_users:
 #    - name: user1
@@ -26,13 +40,12 @@
 #      key: "{{ lookup('file', '/home/ec2-user/files/user3.pub') }}"
 #    - name: user4
 #      key: "{{ lookup('file', '/home/ec2-user/files/user4.pub') }}"
-
 # - include: ~playbooks/users/users.yml
  
   - name: Adding authorized key to the user "{{item.name}}"
     authorized_key:
      user: "{{item.name}}"
-     state: present                               
+     state: present    
      key: "{{lookup('file','/home/ec2-user/files/authorized_keys.users.pub')}}" 
      #    "{{lookup('file', '"{{item.key}}"'}}"
     with_items: #ssh_users

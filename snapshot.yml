@@ -1,0 +1,12 @@
+--- # Creating a snapshot for instance
+- name: Taking snapshot of volumes
+  hosts: 10.95.1.93
+  gather_facts: false
+  - name: Creating a snapshot
+  - ec2_snapshot: 
+     instance_id: i-08b772d386d40ff49
+     region: us-east-1
+     volume_id: vol-0295dd6fc7e38900b
+     description: Taking snapshot of volume_id vol-0295dd6fc7e38900b
+    tags:
+      - backup_mongodb 
