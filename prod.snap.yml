@@ -1,0 +1,40 @@
+--- # Taking snapshots of EC2 instances
+- hosts: ec2
+  remote_user: ec2-user
+  become: yes
+  connection: ssh
+  tasks:
+    - name: Finding EC2 instances with tag of "EBS_backup" for volume backup
+      ec2_remote_facts:
+        region: us-east-1
+        filters:
+          instance-state-name: running
+          "tag:EBS_backup": 'True'
+      register: ec2
+    - debug: var=ec2
+    - name: Finding Volumes of EC2 instances 
+      ec2_vol:
+        instance: "{{item.id}}"
+        region: us-east-1 
+        state: list 
+      with_items: "{{ec2.instances}}"
+      register: ec2_volumes
+    - debug: var=ec2_volumes
+    - name: Listing the volumes
+      set_fact: 
+        volumes: "{{ec2_volumes.results | map(attribute='volumes') | list }}"
+      register: result
+    - debug: var=result
+    - name: Take ec2 snapshots
+      ec2_snapshot:
+        snapshot_tags:
+          Name: "EBS Automated backup"
+          expire: "true"
+        region: us-east-1
+        instance_id: "{{ volume.attachment_set.instance_id }}"
+        device_name: "{{ volume.attachment_set.device }}"
+        wait: "True"
+      vars:
+        volume: "{{item}}"
+      with_items: "{{volumes}}"
+
