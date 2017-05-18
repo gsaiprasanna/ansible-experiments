@@ -1,0 +1,41 @@
+--- # Taking snapshots of EC2 instances
+- hosts: ec2
+  remote_user: ec2-user
+  become: yes
+  connection: local
+  tasks:
+    - name: Finding EC2 instances with tag of "EBSbackup" for volume backup
+      ec2_remote_facts:
+        region: us-east-1
+        filters:
+          instance-state-name: running
+          "tag:EBSbackup": True
+      register: ec2
+    - name: Finding Volumes of EC2 instances 
+      ec2_vol:
+        instance: "{{item.id}}"
+        region: us-east-1 
+        state: list
+      with_items: "{{ec2.instances}}"
+      register: ec2_volumes
+    - name: Listing the volumes
+      set_fact: 
+        volumes: "{{ec2_volumes.results | map(attribute='volumes') | list | unique }}"
+      register: result
+    - name: Take ec2 snapshots
+      vars:
+        volume: "{{item}}"
+      ec2_snapshot:
+        snapshot_tags:
+          Name: "EBS Volumes Backup "
+          env: "dev" 
+        region: us-east-1
+        instance_id: "{{ volume.attachment_set.instance_id }}"
+        description: "EBS volume backup of {{ volume.attachment_set.device }} from {{ volume.attachment_set.instance_id }} taken on {{ ansible_date_time.iso8601 }}"
+        device_name: "{{ volume.attachment_set.device }}"
+        last_snapshot_min_age: 60
+        state: present
+        wait: "no"
+      with_items: "{{volumes}}"
+      register: result 
+    - debug: var=result
