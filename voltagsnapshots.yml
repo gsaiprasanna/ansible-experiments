@@ -1,0 +1,27 @@
+--- # EBS snapshots based on Volume Tags
+- hosts: ec2
+  connection: local 
+  tasks: 
+    - name: Finding Volumes based on tags of "EBSbackup"
+      ec2_vol_facts:
+        region: us-east-1
+        filters:
+            "tag:EBSbackup": True
+            attachment.status: attached
+      register: ec2
+    - name: Take ec2 snapshots
+      vars:
+        volume: "{{item}}"
+      ec2_snapshot:
+        snapshot_tags:
+          Name: "EBS Volumes Backup "
+          env: "dev" 
+        region: us-east-1
+        volume_id: "{{ volume.id }}"
+        description: "EBS volume backup of {{ volume.id }} from {{ volume.attachment_set.instance_id }} taken on {{ ansible_date_time.date }} at {{ansible_date_time.time}}"
+        last_snapshot_min_age: 60
+        state: present
+        wait: "no"
+      with_items: "{{ec2.volumes}}"
+      register: result 
+    - debug: var=result
