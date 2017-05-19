@@ -11,7 +11,7 @@ snapshot_filter = {
             "tag:expire": "True"
         } 
 snapshots = connection.get_all_snapshots(filters=snapshot_filter)
-timeLimit=datetime.datetime.now() - datetime.timedelta(days=0)  
+timeLimit=datetime.datetime.now() - datetime.timedelta(days=5)  
  
 for snapshot in snapshots:
      
@@ -19,4 +19,4 @@ for snapshot in snapshots:
         print " Deleting the snapshot %s  %s "  %(snapshot.id,snapshot.tags)
         connection.delete_snapshot(snapshot.id) 
     else:
-        print "Only deleting snapshots older than 30 days"
+        print "We only delete tag based "expire" snapshots older than 5 days"
