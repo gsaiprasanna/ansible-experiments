@@ -1,0 +1,37 @@
+that email is stuck in my outbox, sending in here
+
+[4:48] 
+-- Dockerfile
+## Build base Nginx image
+FROM nginx:1.13.0
+
+# Install utilities
+RUN apt-get update -y
+RUN apt-get install curl awscli -y
+
+# Cleanup default files
+RUN rm /etc/nginx/conf.d/*
+RUN rm /etc/nginx/nginx.conf 
+
+# Create dirs
+RUN mkdir /etc/nginx/conf.d/ssl.crt
+RUN mkdir /etc/nginx/conf.d/ssl.key
+
+
+
+-- Build Image
+cd <Context Dir>    ##have only required files in the context dir because everything in this dir is sent to Docker daemon during build.
+docker build -t nihardas/nginx-1.13.0 -f /root/nihar/nginx/Dockerfile .
+
+docker build -t 695098306352.dkr.ecr.us-east-1.amazonaws.com/syn-ecs-repo-nginx:1.13.0.v1 .
+
+
+-- List Image
+[root@devops-research01 nginx]# docker images
+REPOSITORY                   TAG                 IMAGE ID            CREATED              SIZE
+nihardas/nginx-1.13.0        latest              e94ea2954215        About a minute ago   212.6 MB
+
+
+
+--Push
+docker push 695098306352.dkr.ecr.us-east-1.amazonaws.com/syn-ecs-repo-nginx:1.13.0.v1

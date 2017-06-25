@@ -1,0 +1,18 @@
+## Build base tomcat image
+FROM tomcat:8.5.14
+
+# Install Utilities
+RUN apt-get update -y
+RUN apt-get install curl awscli -y
+
+# Cleanup Default Files
+RUN rm /usr/local/tomcat/conf/server.xml
+RUN rm /usr/local/tomcat/conf/context.xml
+RUN rm -rf /usr/local/tomcat/webapps/*
+
+# Adding USER
+RUN groupadd tomcat 
+RUN useradd tomcat -g tomcat -ms /bin/bash
+
+# Running user as tomcat
+USER tomcat
