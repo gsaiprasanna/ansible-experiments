@@ -1,0 +1,31 @@
+--- # CHECK DISK SPACE
+- hosts: tag_Monitor_True
+  remote_user: ec2-user
+  become: yes
+  connection: ssh
+  gather_facts: True
+  tasks:
+    - name: Test for Available Disk Space
+      assert:
+        that:
+         - not {{ item.mount == '/' and ( item.size_available < item.size_total - ( item.size_total|float * 0.1) ) }} #diskspace goes below 90%
+         - not {{ item.mount == '/var' and ( item.size_available < item.size_total - ( item.size_total|float * 0.1) ) }}
+      with_items: "{{ ansible_mounts }}"
+      ignore_errors: yes
+      register: disk_free
+    - debug: var=disk_free
+#   - name: Fail when disk space needs attention
+#      fail:
+#        msg: 'Disk space needs attention.'
+#     when: disk_free|failed
+    - name: Free Disk Space
+      command: find /home/ashishg/ -name "*"  -mtime +7 -exec rm {} \;
+      when: disk_free|failed
+      notify: Trigger Slack
+  handlers:  
+    - name: Trigger Slack 
+      slack:
+        token: T029A195J/B5XRN9535/XgoMGAfaGgPyF4UKXHF2L4pZ
+        channel: #syn-newrelic
+        msg: "DiskSpace for {{inventory_hostname}} has been freed."
+        delegate_to: localhost
