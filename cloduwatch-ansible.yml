@@ -1,0 +1,14 @@
+--- # Cloud-watch metric crontab installation
+- hosts:  10.95.10.47
+  remote_user: ec2-user
+  become: yes
+  connection: ssh
+  gather_facts: True
+  tasks:
+    - name: Setup crontab reporting to aws cloud
+      cron:
+        name: "Report AWS Cloudwatch"
+        user: root
+        minute: "*/1"
+        job: "~ec2-user/aws-scripts-mon/mon-put-instance-data.pl --mem-util --verify --verbose > /home/ec2-user/cron.log"
+        state: present
