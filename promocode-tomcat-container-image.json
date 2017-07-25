@@ -1,0 +1,109 @@
+#!/bin/bash
+#Constants
+
+# ==========================================================
+# >>>>>>   FOLLOWING VARIABLES ARE JOB SPECIFIC !!!   >>>>>>
+# >>>>>>         PLEASE REVIEW AND MODIFY             >>>>>>  
+# ==========================================================
+
+
+echo " "
+echo "################################################################################"
+echo " UPDATE CLUSTER BEGINS"
+echo "################################################################################"
+echo " "
+
+REGION=us-east-1
+REPOSITORY_NAME=syn-ecs-repo-promocode
+CLUSTER=synnva-ecs-cluster-prodsvc
+BASE_IMAGE=tomcat-8.5.14
+SERVICE_NAME=promocode-tomcat
+DESIRED_COUNT=2
+
+FAMILY=`sed -n 's/.*"family": "\(.*\)",/\1/p' taskdef.json`
+TASK_DEF_NAME=`sed -n 's/.*"name": "\(.*\)",/\1/p' taskdef.json`
+
+
+echo " "
+echo "########################################"
+echo " VARIABLES PASSED"
+echo "########################################"
+echo " "
+
+echo "REGION= ${REGION}"
+echo "REPOSITORY_NAME= ${REPOSITORY_NAME}"
+echo "CLUSTER= $CLUSTER}"
+echo "FAMILY= ${FAMILY}"
+echo "TASK_DEF_NAME= ${TASK_DEF_NAME}"
+echo "BASE_IMAGE= ${BASE_IMAGE}"
+echo "SERVICE_NAME= ${SERVICE_NAME}"
+echo "DESIRED_COUNT= ${DESIRED_COUNT}"
+
+
+#Store the repositoryUri as a variable
+REPOSITORY_URI=`aws ecr describe-repositories --repository-names ${REPOSITORY_NAME} --region ${REGION} | jq .repositories[].repositoryUri | tr -d '"'`
+
+
+#Replace the build number and respository URI placeholders with the constants above
+sed -e "s;%BUILD_NUMBER%;${BASE_IMAGE}_${BUILD_NUMBER};g" -e "s;%REPOSITORY_URI%;${REPOSITORY_URI};g" taskdef.json > ${FAMILY}-v_${BUILD_NUMBER}.json
+
+
+#Register the task definition in the repository
+echo " "
+echo "########################################"
+echo " REGISTER THE TASK DEFINITION IN THE REPOSITORY"
+echo "########################################"
+echo " "
+
+aws ecs register-task-definition --family ${FAMILY} --cli-input-json file://${WORKSPACE}/${FAMILY}-v_${BUILD_NUMBER}.json --region ${REGION}
+###SERVICES=`aws ecs describe-services --services ${SERVICE_NAME} --cluster ${CLUSTER} --region ${REGION} | jq .failures[]`
+SERVICES=`aws ecs describe-services --services ${SERVICE_NAME} --cluster ${CLUSTER} --region ${REGION} | jq .services[] | grep INACTIVE`
+#Get latest revision
+REVISION=`aws ecs describe-task-definition --task-definition ${TASK_DEF_NAME} --region ${REGION} | jq .taskDefinition.revision`
+
+
+#Create or update service
+if [ "$SERVICES" == "" ]; then
+  
+  echo " "
+  echo "########################################"
+  echo " UPDATING EXISTING SERVICE"
+  echo "########################################"
+  echo " "
+  
+  DESIRED_COUNT=`aws ecs describe-services --services ${SERVICE_NAME} --cluster ${CLUSTER} --region ${REGION} | jq .services[].desiredCount`
+  if [ ${DESIRED_COUNT} = "0" ]; then
+    DESIRED_COUNT="1"
+  fi
+  aws ecs update-service --cluster ${CLUSTER} --region ${REGION} --service ${SERVICE_NAME} --task-definition ${FAMILY}:${REVISION} --desired-count ${DESIRED_COUNT}
+
+else
+  
+  echo " "
+  echo "########################################"
+  echo " CREATING NEW SERVICE"
+  echo "########################################"
+  echo " "
+  
+  #aws ecs create-service --service-name ${SERVICE_NAME} --desired-count 1 --task-definition ${FAMILY} --cluster ${CLUSTER} --region ${REGION}
+  PLACEMENT_STRATEGY='[{"field":"attribute:ecs.availability-zone","type":"spread"},{"field":"instanceId","type":"spread"}]'
+  DEPLOYMENT_CONFIGURATION='{"maximumPercent":200,"minimumHealthyPercent":50}'
+  aws ecs create-service --service-name ${SERVICE_NAME} --desired-count ${DESIRED_COUNT} --task-definition ${FAMILY} --cluster ${CLUSTER} --region ${REGION} --placement-strategy ${PLACEMENT_STRATEGY} --deployment-configuration ${DEPLOYMENT_CONFIGURATION}
+
+fi
+
+echo " "
+echo "################################################################################"
+echo " UPDATE CLUSTER ENDS"
+echo "################################################################################"
+echo " "
+
+
+# Delete local copy of the image after ECR push
+echo " "
+echo "########################################"
+echo " DELETE LOCAL COPY OF THE IMAGE AFTER IMAGE PUSH"
+echo "########################################"
+echo " "
+docker rmi -f ${REPOSITORY_URI}:${BASE_IMAGE}_${BUILD_NUMBER}
+#docker rmi -f ${REPOSITORY_URI}:latest
