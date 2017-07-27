@@ -1,0 +1,48 @@
+--- # CHECK DISK SPACE
+- hosts: tag_monitor_disk_space_true
+  remote_user: ec2-user
+  become: yes
+  connection: ssh
+  gather_facts: True
+  vars:
+      UsedThresholdPercentage: "{{usage|float}}"
+      days: "{{days|int}}"
+      slack_channel: #synapseaws
+  tasks:
+    - name: Check for Available Disk Space
+      assert:
+        that:
+         - "item.mount == '/' and ( ( item.size_total - item.size_available ) < ( item.size_total|float * {{UsedThresholdPercentage}} ) )"
+      with_items: "{{ ansible_mounts }}"
+      ignore_errors: yes
+      register: disk_free
+    - debug: var=disk_free
+    - name: Cleaning the Disk Space
+      copy: src=/home/ec2-user/sh/logfile_search_and_delete.sh dest=/tmp/logfile_search_and_delete.sh mode=0700
+    - name: Executing the shell script on remote node
+      shell: /tmp/logfile_search_and_delete.sh {{days}}
+      register: shell_exec
+    - debug: var=shell_exec.stdout_lines
+    - name: Removing the shell script
+      file: path=/tmp/logfile_search_and_delete.sh state=absent
+      notify:  Alert Slack
+      when: disk_free|failed
+      register: result
+    - debug: var=result
+  handlers:
+    - name: Alerting Slack before Clean Up
+      slack:
+        token: T029A195J/B5XRN9535/XgoMGAfaGgPyF4UKXHF2L4pZ
+        channel: "{{ slack_channel }}"
+        msg: "Disk Space for {{inventory_hostname}} host is more than {{UsedThresholdPercentage|float * 100}}%, so cleaning it up... "
+      listen: Alert Slack
+      delegate_to: localhost
+    - name: Alerting Slack after Clean Up
+      slack:
+        token: T029A195J/B5XRN9535/XgoMGAfaGgPyF4UKXHF2L4pZ
+        channel: "{{ slack_channel }}"
+        msg: "DiskSpace for {{inventory_hostname}} host which went more than {{UsedThresholdPercentage|float * 100}}% of total disk space has been cleaned."
+      listen: Alert Slack
+      delegate_to: localhost
+
+	 
